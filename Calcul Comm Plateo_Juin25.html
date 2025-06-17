@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculateur de Commission - PLATEO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #14263E;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .calculator {
+            background: #D9D7C6;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(20,38,62,0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #14263E;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #14263E;
+            font-weight: 500;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #C2D9BC;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-family: 'Outfit', sans-serif;
+            background: #EDEAE4;
+            color: #14263E;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #5660EC;
+        }
+        
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            color: #14263E;
+        }
+        
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #5660EC;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .btn-calculate {
+            width: 100%;
+            padding: 18px;
+            background: #14263E;
+            color: #EDEAE4;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-bottom: 30px;
+        }
+        
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+        }
+        
+        .result {
+            background: #EDEAE4;
+            border: 2px solid #5660EC;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #5660EC;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .result-details {
+            display: grid;
+            gap: 10px;
+            font-size: 0.95rem;
+            color: #14263E;
+        }
+        
+        .formula-info {
+            background: #C2D9BC;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .formula-info h3 {
+            color: #14263E;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .formula {
+            background: #EDEAE4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Outfit', monospace;
+            font-size: 0.9rem;
+            border-left: 4px solid #5660EC;
+            margin-bottom: 15px;
+            color: #14263E;
+        }
+        
+        .rates {
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #14263E;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>💰 Calculateur Commission <br> PLATEO</h1>
+        
+        <div class="input-group">
+            <label for="montant">Montant HT (hors commission)</label>
+            <input type="number" id="montant" placeholder="Ex: 2607.69" step="0.01" min="0">
+        </div>
+        
+        <div class="toggle-group">
+            <label>Auto-entrepreneur ?</label>
+            <label class="toggle">
+                <input type="checkbox" id="autoEntrepreneur">
+                <span class="slider"></span>
+            </label>
+            <span id="statusText">Non (Commission HT)</span>
+        </div>
+        
+        <button class="btn-calculate" onclick="calculer()">
+            🧮 Calculer
+        </button>
+        
+        <div class="result" id="result">
+            <div class="result-value" id="resultValue"></div>
+            <div class="result-details" id="resultDetails"></div>
+        </div>
+        
+        <div class="formula-info">
+            <h3>📋 Formule utilisée</h3>
+            <div class="formula">
+                Montant final = Montant initial / (1 - k × taux)<br>
+                k = 1 (HT) ou k = 1.2 (TTC avec TVA 20%)
+            </div>
+            
+            <h3>📊 Barème des taux</h3>
+		
+            <div class="rates">
+		<i>(à appliquer sur montant HT commission incluse)</i><br><br>
+                • 0 - 250€ : <strong>20%</strong><br>
+                • 250 - 1 000€ : <strong>15%</strong><br>
+                • 1 000 - 10 000€ : <strong>10%</strong><br>
+                • 10 000 - 50 000€ : <strong>7%</strong><br>
+                • > 50 000€ : <strong>5%</strong>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gestion du toggle
+        const autoToggle = document.getElementById('autoEntrepreneur');
+        const statusText = document.getElementById('statusText');
+        
+        autoToggle.addEventListener('change', function() {
+            statusText.textContent = this.checked ? 
+                'Oui (Commission TTC avec TVA à 20%)' : 
+                'Non (Commission HT)';
+        });
+
+        // Paliers de commission
+        const paliers = [
+            {min: 0, max: 250, taux: 0.20},
+            {min: 250, max: 1000, taux: 0.15},
+            {min: 1000, max: 10000, taux: 0.10},
+            {min: 10000, max: 50000, taux: 0.07},
+            {min: 50000, max: Infinity, taux: 0.05}
+        ];
+
+        function getTaux(montant) {
+            for (let palier of paliers) {
+                if (montant > palier.min && montant <= palier.max) {
+                    return palier.taux;
+                }
+            }
+            return 0.05;
+        }
+
+        function calculerMontantFinal(montantInitial, estAutoEntrepreneur) {
+            const k = estAutoEntrepreneur ? 1.2 : 1;
+            
+            // Méthode itérative pour résoudre l'équation
+            let montantFinal = montantInitial;
+            
+            for (let i = 0; i < 50; i++) {
+                const taux = getTaux(montantFinal);
+                const nouveauMontant = montantInitial / (1 - k * taux);
+                
+                if (Math.abs(nouveauMontant - montantFinal) < 0.01) {
+                    break;
+                }
+                
+                montantFinal = nouveauMontant;
+            }
+            
+            return {
+                montantFinal: montantFinal,
+                taux: getTaux(montantFinal),
+                k: k,
+                commission: montantFinal - montantInitial
+            };
+        }
+
+        function calculer() {
+            const montantInput = document.getElementById('montant');
+            const estAutoEntrepreneur = document.getElementById('autoEntrepreneur').checked;
+            
+            const montantInitial = parseFloat(montantInput.value);
+            
+            if (!montantInitial || montantInitial <= 0) {
+                alert('Veuillez saisir un montant valide');
+                return;
+            }
+            
+            const resultat = calculerMontantFinal(montantInitial, estAutoEntrepreneur);
+            
+            // Affichage du résultat
+            const resultDiv = document.getElementById('result');
+            const resultValue = document.getElementById('resultValue');
+            const resultDetails = document.getElementById('resultDetails');
+            
+            resultValue.textContent = `Montant (comm incluse) : ${resultat.montantFinal.toFixed(2)} € HT`;
+            
+            resultDetails.innerHTML = `
+                <div><strong>Commission :</strong> ${resultat.commission.toFixed(2)} €</div>
+                <div><strong>Taux appliqué :</strong> ${(resultat.taux * 100).toFixed(1)}%</div>
+                <div><strong>Taxe sur comm :</strong> ${estAutoEntrepreneur ? 'TTC (TVA 20%)' : 'HT'}</div>
+                <div><strong>Vérification :</strong> ${montantInitial} / (1 - ${resultat.k} × ${resultat.taux.toFixed(3)}) = ${resultat.montantFinal.toFixed(2)} €</div>
+            `;
+            
+            resultDiv.classList.add('show');
+        }
+
+        // Calcul automatique quand on appuie sur Entrée
+        document.getElementById('montant').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculer();
+            }
+        });
+    </script>
+</body>
+</html>
